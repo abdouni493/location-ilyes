@@ -560,7 +560,7 @@ class SessionService {
       const session: SessionData = JSON.parse(stored);
       return {
         'Authorization': `Bearer ${session.accessToken}`,
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqeXFteGlxZWVnY252b3BpYnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTg1MjIsImV4cCI6MjA4ODQ3NDUyMn0.7-6qvX4F3oebYm-W1bBl6SsKQf-A79bc1PP7PhpQYcQ'
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlza3lldHJ3c3RlbmNieWJveW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MTM5OTYsImV4cCI6MjEwOTI4OTk5Nn0.P3OM9zkSw8sRdgb5Dhakn8hhRhKdPsV18VebTLL2WrE'
       };
     } catch {
       return {};

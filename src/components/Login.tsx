@@ -41,24 +41,31 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      // if we stored a flag locally, skip the network request
-      if (localStorage.getItem('signupDone')) {
-        setAdminExists(true);
-      }
-      
+      // The database is the source of truth: the "create admin" option is
+      // shown only while no administrator account exists yet.
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase.rpc('admin_exists');
+        if (!error && typeof data === 'boolean') {
+          setAdminExists(data);
+          if (data) localStorage.setItem('signupDone', 'true');
+          else localStorage.removeItem('signupDone');
+          return;
+        }
+        const { data: countRow } = await supabase
           .from('admin_count')
           .select('count')
           .single();
-        if (data && (data as any).count > 0) {
-          setAdminExists(true);
+        if (countRow) {
+          setAdminExists((countRow as any).count > 0);
+          return;
         }
       } catch (err) {
         console.warn('Error checking admin:', err);
       }
+      // offline fallback only
+      if (localStorage.getItem('signupDone')) setAdminExists(true);
     };
-    
+
     const loadAgencyBranding = async () => {
       try {
         const settings = await DatabaseService.getWebsiteSettings();
@@ -97,9 +104,11 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
         console.log('[Login] === SIGNUP MODE ===');
         console.log('[Login] Attempting Supabase signup...');
         // create new admin user and profile
-        const { data: signData, error: signError } = await supabase.auth.signUp(
-          { email, password }
-        );
+        const { data: signData, error: signError } = await supabase.auth.signUp({
+          email: email.trim().toLowerCase(),
+          password,
+          options: { data: { role: 'admin', username, full_name: username } },
+        });
         if (signError) {
           console.log('[Login] Signup error:', signError.message);
           setErrorMessage(signError.message);
@@ -111,7 +120,7 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
         if (signData?.user) {
           const { error: profileError } = await supabase
             .from('profiles')
-            .insert({ id: signData.user.id, username, role: 'admin' });
+            .upsert({ id: signData.user.id, username, role: 'admin' });
           if (profileError) {
             console.error('Profile insert error:', profileError);
           }
@@ -120,10 +129,11 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
         // mark signup done so form disappears permanently
         localStorage.setItem('signupDone', 'true');
         setAdminExists(true);
+        setIsSigningUp(false);
 
         // automatically sign in the user
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword(
-          { email, password }
+          { email: email.trim().toLowerCase(), password }
         );
         if (loginError) {
           console.log('[Login] Auto-signin after signup error:', loginError.message);
@@ -223,6 +233,31 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
             // Worker RPC login successful
             const worker = loginResult.worker;
             const workerRole = (worker.type as UserRole) || 'worker';
+
+            // login_worker (re)creates the worker's Supabase Auth account with
+            // this password: retry a real Auth sign-in so RLS sees an
+            // authenticated user.
+            if (worker.email) {
+              const retry = await supabase.auth.signInWithPassword({ email: worker.email, password });
+              if (!retry.error && retry.data?.session) {
+                await sessionService.createSession(
+                  retry.data.session.access_token,
+                  retry.data.session.refresh_token,
+                  retry.data.session.expires_at || Math.floor(Date.now() / 1000) + 3600,
+                  retry.data.user.id,
+                  retry.data.user.email || '',
+                  workerRole,
+                  worker.full_name
+                );
+                localStorage.removeItem('supabase.auth.token');
+                sessionStorage.clear();
+                setEmail('');
+                setPassword('');
+                setUsername('');
+                onLogin({ name: worker.full_name, email: worker.email || '', role: workerRole, avatar: worker.profile_photo || '' });
+                return;
+              }
+            }
             
             console.log('[Login] === WORKER LOGIN SUCCESSFUL ===');
             console.log('[Login] Worker authenticated:', { name: worker.full_name, email: worker.email, role: workerRole });
@@ -551,7 +586,7 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
                 onClick={() => setIsSigningUp(true)}
                 className="text-sm font-semibold text-saas-primary-via hover:text-saas-primary-via/80 transition-colors"
               >
-                {t.signup} ?
+                {lang === 'fr' ? 'Créer le compte administrateur' : 'إنشاء حساب المدير'}
               </button>
               <p className="text-xs text-saas-text-muted mt-2">(première connexion uniquement)</p>
             </motion.div>
