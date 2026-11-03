@@ -4,6 +4,7 @@ import { Car, Client, Agency, Worker, WorkerAdvance, WorkerAbsence, WorkerPaymen
 import { parseCarCurrencies } from '../utils/currency';
 import { companyContext, scopeQuery } from '../utils/companyContext';
 import { sessionService } from '../utils/sessionService';
+import { applyBranding } from '../utils/branding';
 
 // Generic database service functions
 export class DatabaseService {
@@ -2192,6 +2193,8 @@ export class DatabaseService {
     }
 
     if (error) throw error;
+
+    applyBranding(data.name, data.logo);
 
     return {
       name: data.name,

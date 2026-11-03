@@ -200,7 +200,7 @@ export const generateOwnerReportHTML = (data: OwnerReportData): string => {
     <div class="brand">
       ${logo}
       <div>
-        <h1>${esc(agencySettings?.name || agencySettings?.agencyName || 'MHD AUTO')}</h1>
+        <h1>${esc(agencySettings?.name || agencySettings?.agencyName || 'Altech Location')}</h1>
         <p>${esc(agencySettings?.address || '')}${agencySettings?.phone ? ' · ' + esc(agencySettings.phone) : ''}</p>
         ${agencySettings?.email ? `<p>${esc(agencySettings.email)}</p>` : ''}
       </div>
@@ -302,7 +302,7 @@ export const generateOwnerReportHTML = (data: OwnerReportData): string => {
   </div>
 
   <footer>
-    <span>${esc(agencySettings?.name || 'MHD AUTO')} — ${T('Rapport propriétaire', 'تقرير المالك')}</span>
+    <span>${esc(agencySettings?.name || 'Altech Location')} — ${T('Rapport propriétaire', 'تقرير المالك')}</span>
     <span>${esc(new Date().toLocaleString(isFr ? 'fr-FR' : 'ar-DZ'))}</span>
   </footer>
 

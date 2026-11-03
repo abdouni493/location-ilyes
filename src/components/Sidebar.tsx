@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     canSeeInterface(item.id) && !(item.id === 'web-orders' && !isSuperAdmin)
   );
   const [agencyData, setAgencyData] = useState({
-    name: 'MHD AUTO',
+    name: 'Altech Location',
     logo: '',
   });
 
@@ -41,14 +41,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       try {
         const websiteSettings = await DatabaseService.getWebsiteSettings();
         setAgencyData({
-          name: websiteSettings.name || 'MHD AUTO',
+          name: websiteSettings.name || 'Altech Location',
           logo: websiteSettings.logo || '',
         });
       } catch (error) {
         console.error('Error loading agency data:', error);
         // Fallback to default values
         setAgencyData({
-          name: 'MHD AUTO',
+          name: 'Altech Location',
           logo: '',
         });
       }

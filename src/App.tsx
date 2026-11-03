@@ -1,3 +1,4 @@
+import { applyBranding } from './utils/branding';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -291,14 +292,7 @@ export default function App() {
 
         // Branding dynamique : le titre et le favicon suivent le logo/nom
         // de l'agence en base (les PNG de public/ restent le défaut statique).
-        if (dbWebsiteSettings?.name) {
-          document.title = `${dbWebsiteSettings.name.split(/\s+/).slice(0, 3).join(' ')} | Location de Voitures`;
-        }
-        if (dbWebsiteSettings?.logo) {
-          document.querySelectorAll("link[rel='icon']").forEach(link => {
-            (link as HTMLLinkElement).href = dbWebsiteSettings.logo;
-          });
-        }
+        applyBranding(dbWebsiteSettings?.name, dbWebsiteSettings?.logo);
       } catch (error) {
         console.error('Failed to load website data from database:', error);
         // Fallback to mock data if database load fails

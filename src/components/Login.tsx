@@ -36,7 +36,7 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [agencyBranding, setAgencyBranding] = useState<AgencyBranding>({
     logo: '',
-    name: 'AutoLocation'
+    name: 'Altech Location'
   });
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export const Login: React.FC<LoginProps> = ({ lang, onLogin }) => {
         if (settings) {
           setAgencyBranding({
             logo: settings.logo || '',
-            name: settings.name || 'AutoLocation'
+            name: settings.name || 'Altech Location'
           });
         }
       } catch (err) {
